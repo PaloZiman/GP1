@@ -39,9 +39,8 @@ namespace dae
 
 	float Vector4::Dot(const Vector4& v1, const Vector4& v2)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		
+		return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]+v1[3]*v2[3];
 	}
 
 #pragma region Operator Overloads

@@ -31,20 +31,37 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float gradient = px / static_cast<float>(m_Width);
+			
+			Ray viewRay{ {0,0,0}, {(2 * (px + 0.5f) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height),1 - 2 * py / (float)m_Height,1} };
+			ColorRGB finalColor{};
+			HitRecord closestHit{};
+			//Sphere testSphere{ {0.f,0.f,100.f},50.f,0 };
+			//if(px > m_Width/2)
+			//GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
+			pScene->GetClosestHit(viewRay, closestHit);
+			if (closestHit.didHit) {
+				/*const float scaled_t = (closestHit.t - 50) / 40;
+				finalColor = { scaled_t,scaled_t,scaled_t };*/
+				finalColor = materials[closestHit.materialIndex]->Shade();
+
+			}
+			//ColorRGB finalColor{ (2 * (px) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height),1 - 2 * py / (float)m_Height ,1 };
+			
+			/*float gradient = px / static_cast<float>(m_Width);
 			gradient += py / static_cast<float>(m_Width);
 			gradient /= 2.0f;
 
 			ColorRGB finalColor{ gradient, gradient, gradient };
-
+			*/
 			//Update Color in Buffer
-			finalColor.MaxToOne();
+			//finalColor.MaxToOne();
 
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),
 				static_cast<uint8_t>(finalColor.g * 255),
 				static_cast<uint8_t>(finalColor.b * 255));
 		}
+		//std::cout << (2 * (px) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height) << "\n";
 	}
 
 	//@END

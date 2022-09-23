@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Math.h"
 #include "DataTypes.h"
+#include <iostream>
 
 namespace dae
 {
@@ -12,9 +13,15 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			assert(false && "No Implemented Yet!");
-			return false;
+			Vector3 tc{ sphere.origin - ray.origin };
+			Vector3 cp{ ray.direction.Normalized() * Vector3::Dot(ray.direction , tc) - tc};
+			float cpLength = cp.Magnitude();
+			if (cpLength >= sphere.radius) return false;
+			hitRecord.origin = ray.direction * (tc.Magnitude() - sqrtf(sphere.radius * sphere.radius - cpLength * cpLength));
+			hitRecord.didHit = true;
+			hitRecord.t = (hitRecord.origin - ray.origin).Magnitude();
+			hitRecord.materialIndex = sphere.materialIndex;
+			return true;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -27,8 +34,15 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
-			assert(false && "No Implemented Yet!");
+			float t = Vector3::Dot((plane.origin - ray.origin),plane.normal) / Vector3::Dot(ray.direction.Normalized(),plane.normal);
+			if (t > 0 && t < 1000) {
+				hitRecord.didHit = true;
+				hitRecord.origin = ray.origin + ray.direction * t;
+				hitRecord.normal = plane.normal;
+				hitRecord.t = t;
+				hitRecord.materialIndex = plane.materialIndex;
+				return true;
+			}
 			return false;
 		}
 

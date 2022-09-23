@@ -45,16 +45,12 @@ namespace dae {
 
 	float Vector3::Dot(const Vector3& v1, const Vector3& v2)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 	}
 
 	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		return Vector3( v1[1]*v2[2]-v1[2]*v2[1] , v1[2]*v2[0] - v1[0]*v2[2] , v1[0]*v2[1]-v1[1]*v2[0]);
 	}
 
 	Vector3 Vector3::Project(const Vector3& v1, const Vector3& v2)

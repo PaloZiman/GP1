@@ -29,7 +29,23 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
 		//todo W1
-		assert(false && "No Implemented Yet!");
+		float shortestDistance{ 10000 };
+		HitRecord hitRecord;
+		for (int i{}; i < m_SphereGeometries.size(); ++i) {
+			GeometryUtils::HitTest_Sphere(m_SphereGeometries[i], ray, hitRecord);
+			if (hitRecord.didHit && hitRecord.t < shortestDistance) {
+				shortestDistance = hitRecord.t;
+				closestHit = hitRecord;
+			}
+		}
+		for (int i{}; i < m_PlaneGeometries.size(); ++i) {
+			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, hitRecord);
+			if (hitRecord.didHit && hitRecord.t < shortestDistance) {
+				shortestDistance = hitRecord.t;
+				closestHit = hitRecord;
+			}
+		}
+
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const

@@ -11,6 +11,7 @@
 #include "Timer.h"
 #include "Renderer.h"
 #include "Scene.h"
+#include "Utils.h"
 
 using namespace dae;
 
@@ -22,6 +23,7 @@ void ShutDown(SDL_Window* pWindow)
 
 int main(int argc, char* args[])
 {
+	
 	//Unreferenced parameters
 	(void)argc;
 	(void)args;
@@ -95,8 +97,11 @@ int main(int argc, char* args[])
 				std::cout << "Something went wrong. Screenshot not saved!" << std::endl;
 			takeScreenshot = false;
 		}
+
+		
 	}
 	pTimer->Stop();
+
 
 	//Shutdown "framework"
 	delete pScene;
@@ -106,3 +111,4 @@ int main(int argc, char* args[])
 	ShutDown(pWindow);
 	return 0;
 }
+
