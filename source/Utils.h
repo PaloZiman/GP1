@@ -13,13 +13,21 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			Vector3 tc{ sphere.origin - ray.origin };
-			Vector3 cp{ ray.direction.Normalized() * Vector3::Dot(ray.direction , tc) - tc};
-			float cpLength = cp.Magnitude();
-			if (cpLength >= sphere.radius) return false;
-			hitRecord.origin = ray.direction * (tc.Magnitude() - sqrtf(sphere.radius * sphere.radius - cpLength * cpLength));
+			Vector3 rayToSphere{ sphere.origin - ray.origin };
+			Vector3 rayWithDistToSphere{ ray.direction.Normalized()*Vector3::Dot(rayToSphere,ray.direction.Normalized())};
+
+			float cp = sqrtf(rayToSphere.Magnitude() * rayToSphere.Magnitude() - rayWithDistToSphere.Magnitude() * rayWithDistToSphere.Magnitude());
+			if (cp > sphere.radius || Vector3::Dot(rayToSphere, ray.direction.Normalized()) < 0) return false;
+			float thc = sqrtf(sphere.radius * sphere.radius - cp * cp);
+			float distanceToHit;
+			if (rayWithDistToSphere.Magnitude() - thc < rayWithDistToSphere.Magnitude() + thc)
+				distanceToHit = rayWithDistToSphere.Magnitude() - thc;
+			else
+				distanceToHit = rayWithDistToSphere.Magnitude() + thc;
+
+			hitRecord.origin = ray.direction.Normalized() * distanceToHit + ray.origin;
 			hitRecord.didHit = true;
-			hitRecord.t = (hitRecord.origin - ray.origin).Magnitude();
+			hitRecord.t = distanceToHit;
 			hitRecord.materialIndex = sphere.materialIndex;
 			return true;
 		}
@@ -34,8 +42,8 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			float t = Vector3::Dot((plane.origin - ray.origin),plane.normal) / Vector3::Dot(ray.direction.Normalized(),plane.normal);
-			if (t > 0 && t < 1000) {
+			float t = Vector3::Dot((plane.origin - ray.origin),plane.normal) / Vector3::Dot(ray.direction,plane.normal);
+			if (t > ray.min && t < ray.max) {
 				hitRecord.didHit = true;
 				hitRecord.origin = ray.origin + ray.direction * t;
 				hitRecord.normal = plane.normal;

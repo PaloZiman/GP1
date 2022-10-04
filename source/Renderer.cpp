@@ -31,10 +31,16 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			
-			Ray viewRay{ {0,0,0}, {(2 * (px + 0.5f) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height),1 - 2 * py / (float)m_Height,1} };
+			float cx = (2 * (px + 0.5f) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height);
+			float cy = 1 - 2 * py / (float)m_Height;
+			Vector3 cameraSpaceDir = {cx ,cy,1 };
+
+			Ray viewRay{ camera.origin, camera.CalculateCameraToWorld().TransformVector(cameraSpaceDir) };
+
 			ColorRGB finalColor{};
 			HitRecord closestHit{};
+			//Plane testPlane{ {0,-50.f,0.f},{0,1.f,0},0 };
+			//GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);
 			//Sphere testSphere{ {0.f,0.f,100.f},50.f,0 };
 			//if(px > m_Width/2)
 			//GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
@@ -42,7 +48,18 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit) {
 				/*const float scaled_t = (closestHit.t - 50) / 40;
 				finalColor = { scaled_t,scaled_t,scaled_t };*/
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				for (Light light : lights)
+				{
+					Ray lightRay{ closestHit.origin,(light.origin-closestHit.origin).Normalized(),0.001f,(closestHit.origin - light.origin).Magnitude() };
+					if(pScene->DoesHit(lightRay))
+					{
+						finalColor = materials[closestHit.materialIndex]->Shade()*0.5f;
+					}
+					else
+					{
+						finalColor = materials[closestHit.materialIndex]->Shade();
+					}
+				}
 
 			}
 			//ColorRGB finalColor{ (2 * (px) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height),1 - 2 * py / (float)m_Height ,1 };
