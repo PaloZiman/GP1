@@ -73,6 +73,14 @@ namespace dae
 			{
 				origin += deltaTime * -right;
 			}
+			if (pKeyboardState[SDL_SCANCODE_Q])
+			{
+				fovAngle *= 1.1f;
+			}
+			if (pKeyboardState[SDL_SCANCODE_E])
+			{
+				fovAngle *= 0.9f;
+			}
 			float rx = - mouseX * deltaTime * 0.01f;
 			float ry = -mouseY * deltaTime * 0.01f;
 			Matrix mouseYRot = Matrix({ cosf(rx),0,sinf(rx) }, Vector3::UnitY, { -sinf(rx) ,0,cosf(rx) }, { 0,0,0 });

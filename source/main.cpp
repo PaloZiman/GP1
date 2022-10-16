@@ -48,7 +48,9 @@ int main(int argc, char* args[])
 	const auto pRenderer = new Renderer(pWindow);
 
 	//const auto pScene = new Scene_W1();
-	const auto pScene = new Scene_W2();
+	//const auto pScene = new Scene_W2();
+	const auto pScene = new Scene_W3();
+	//const auto pScene = new Scene_W3_LambertDiffuse();
 	pScene->Initialize();
 
 	//Start loop
@@ -56,6 +58,8 @@ int main(int argc, char* args[])
 	float printTimer = 0.f;
 	bool isLooping = true;
 	bool takeScreenshot = false;
+	bool lastF2 = false;
+	bool lastF3 = false;
 	while (isLooping)
 	{
 		//--------- Get input events ---------
@@ -73,7 +77,18 @@ int main(int argc, char* args[])
 				break;
 			}
 		}
-
+		//--------- Input ----------
+		const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+		if (pKeyboardState[SDL_SCANCODE_F2] && !lastF2)
+		{
+			pRenderer->ToggleShadows();
+		}
+		if (pKeyboardState[SDL_SCANCODE_F3] && !lastF3)
+		{
+			pRenderer->CycleLightMode();
+		}
+		lastF2 = pKeyboardState[SDL_SCANCODE_F2];
+		lastF3 = pKeyboardState[SDL_SCANCODE_F3];
 		//--------- Update ---------
 		pScene->Update(pTimer);
 

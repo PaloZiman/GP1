@@ -45,8 +45,6 @@ namespace dae {
 				closestHit = hitRecord;
 			}
 		}
-		
-
 	}
 
 	bool Scene::DoesHit(const Ray& ray) const
@@ -180,5 +178,59 @@ namespace dae {
 
 		//Light
 		AddPointLight({ 0.f,5.f,-5.f }, 70.f, colors::White);
+	}
+	void Scene_W3::Initialize()
+	{
+		m_Camera.origin = { 0.f,3.f,-9.f };
+		m_Camera.fovAngle = 45.f;
+
+		const auto matCT_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ .972f,.960f,.915f }, 1.f, 1.f));
+		const auto matCT_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ .972f,.960f,.915f }, 1.f, .6f));
+		const auto matCT_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ .972f,.960f,.915f }, 1.f, .1f));
+		const auto matCT_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ .75f,.75f,.75f }, 0.f, 1.f));
+		const auto matCT_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ .75f,.75f,.75f }, 0.f, .6f));
+		const auto matCT_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ .75f,.75f,.75f }, 0.f, .1f));
+
+		const auto matLambert_GrayBlue = AddMaterial(new Material_Lambert({ .49f,.57f,.57f }, 1.f));
+
+		//Plane
+		AddPlane(Vector3{ 0.f,0.f,10.f }, Vector3{ 0.f,0.f,-1.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f,0.f,0.f }, Vector3{ 0.f,1.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 0.f,10.f,0.f }, Vector3{ 0.f,-1.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ 5.f,0.f,0.f }, Vector3{ -1.f,0.f,0.f }, matLambert_GrayBlue);
+		AddPlane(Vector3{ -5.f,0.f,0.f }, Vector3{ 1.f,0.f,0.f }, matLambert_GrayBlue);
+
+		//Spheres
+		AddSphere(Vector3{ -1.75f,1.f,0.f }, 0.75f, matCT_GrayRoughMetal);
+		AddSphere(Vector3{ 0.f,1.f,0.f }, 0.75f, matCT_GrayMediumMetal);
+		AddSphere(Vector3{ 1.75f,1.f,0.f }, 0.75f, matCT_GraySmoothMetal);
+		AddSphere(Vector3{ -1.75f,3.f,0.f }, 0.75f, matCT_GrayRoughPlastic);
+		AddSphere(Vector3{ 0.f,3.f,0.f }, 0.75f, matCT_GrayMediumPlastic);
+		AddSphere(Vector3{ 1.75f,3.f,0.f }, 0.75f, matCT_GraySmoothPlastic);
+
+		//Light
+		AddPointLight(Vector3{ 0.f,5.f,5.f }, 50.f, ColorRGB{ 1.f,.61f,.45f });
+		AddPointLight(Vector3{ -2.5f,5.f,-5.f }, 70.f, ColorRGB{ 1.f,.8f,.45f });
+		AddPointLight(Vector3{ 2.5f,2.5f,-5.f }, 50.f, ColorRGB{ .34f,.47f,.68f });
+	}
+
+	void Scene_W3_LambertDiffuse::Initialize()
+	{
+		m_Camera.origin = { 0.f,1.f,-5.f };
+		m_Camera.fovAngle = 45.f;
+
+		//Materials
+		const auto matLambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
+		const auto matLambert_Blue = AddMaterial(new Material_LambertPhong(colors::Blue,1.f,1.f,60.f));
+		const auto matLambert_Yellow = AddMaterial(new Material_Lambert(colors::Yellow, 1.f));
+
+		//Spherers
+		AddSphere({ -0.75f,1.f,0.f }, 1.f, matLambert_Red);
+		AddSphere({ 0.75f,1.f,0.f }, 1.f, matLambert_Blue);
+
+		AddPlane({ 0.f,0.f,0.f }, { 0.f,1.f,0.f }, matLambert_Yellow);
+
+		AddPointLight({ 0.f,5.f,5.f }, 25.f, colors::White);
+		AddPointLight({ 0.f,2.5f,-5.f }, 25.f, colors::White);
 	}
 }

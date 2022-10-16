@@ -13,16 +13,14 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return (cd*kd)/PI;
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			ColorRGB x = (kd + cd)/PI;
+			x.MaxToOne();
+			return x;
 		}
 
 		/**
@@ -36,9 +34,9 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const Vector3 reflect_l = Vector3::Reflect(n,l);
+			const float dot_n_l = Vector3::Dot(reflect_l, v);
+			return ColorRGB{ 1, 1, 1 } * ( ks * pow(dot_n_l, exp));
 		}
 
 		/**
@@ -50,9 +48,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return f0+(ColorRGB{1,1,1}-f0) * powf((1-Vector3::Dot(h,  -v)),5);
 		}
 
 		/**
@@ -64,9 +60,9 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float a = roughness * roughness;
+			const float dot_n_h = Vector3::Dot(n, h);
+			return (a*a)/(PI*powf(((dot_n_h * dot_n_h) * (a*a-1)+1),2));
 		}
 
 
@@ -79,9 +75,10 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			const float k = powf((roughness + 1), 2) / 8;
+			const float dot_n_v = fabs(Vector3::Dot(n, v));
+
+			return dot_n_v / (dot_n_v * (1-k)+k);
 		}
 
 		/**
@@ -94,9 +91,7 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return BRDF::GeometryFunction_SchlickGGX(n,-v,roughness) * BRDF::GeometryFunction_SchlickGGX(n, -l, roughness);
 		}
 
 	}

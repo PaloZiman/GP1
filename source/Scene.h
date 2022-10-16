@@ -93,4 +93,33 @@ namespace dae
 
 		void Initialize() override;
 	};
+	//+++++++++++++++++++++++++++++++++++++++++
+	//WEEK 3 Test Scene
+	class Scene_W3 final : public Scene
+	{
+	public:
+		Scene_W3() = default;
+		~Scene_W3() override = default;
+
+		Scene_W3(const Scene_W3&) = delete;
+		Scene_W3(Scene_W3&&) noexcept = delete;
+		Scene_W3& operator=(const Scene_W3&) = delete;
+		Scene_W3& operator=(Scene_W3&&) noexcept = delete;
+
+		void Initialize() override;
+	};
+
+	class Scene_W3_LambertDiffuse final : public Scene
+	{
+	public:
+		Scene_W3_LambertDiffuse() = default;
+		~Scene_W3_LambertDiffuse() override = default;
+
+		Scene_W3_LambertDiffuse(const Scene_W3_LambertDiffuse&) = delete;
+		Scene_W3_LambertDiffuse(Scene_W3_LambertDiffuse&&) noexcept = delete;
+		Scene_W3_LambertDiffuse& operator=(const Scene_W3_LambertDiffuse&) = delete;
+		Scene_W3_LambertDiffuse& operator=(Scene_W3_LambertDiffuse&&) noexcept = delete;
+
+		void Initialize() override;
+	};
 }

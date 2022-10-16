@@ -2,6 +2,7 @@
 #include "Math.h"
 #include "DataTypes.h"
 #include "BRDFs.h"
+#include "Scene.h"
 
 namespace dae
 {
@@ -59,9 +60,7 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return BRDF::Lambert(m_DiffuseReflectance,m_DiffuseColor);
 		}
 
 	private:
@@ -84,9 +83,7 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) + BRDF::Phong(m_SpecularReflectance,m_PhongExponent,l,-v,hitRecord.normal);
 		}
 
 	private:
@@ -109,9 +106,17 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			//todo: W3
-			assert(false && "Not Implemented Yet");
-			return {};
+			ColorRGB f0;
+			if (m_Metalness == 0) f0 = { 0.04f,0.04f ,0.04f };
+			else f0 = m_Albedo;
+			const Vector3 h = (-v+l).Normalized();
+			ColorRGB cook_Torrance = 
+				(
+					BRDF::NormalDistribution_GGX(hitRecord.normal,h,m_Roughness)
+					*BRDF::FresnelFunction_Schlick(h,v,f0)
+					*BRDF::GeometryFunction_Smith(hitRecord.normal,v,l,m_Roughness)
+				) /** (1 / (4 * Vector3::Dot(-v, hitRecord.normal) * Vector3::Dot(-l, hitRecord.normal)))*/;
+			return BRDF::Lambert(1-m_Metalness,m_Albedo) +cook_Torrance;
 		}
 
 	private:

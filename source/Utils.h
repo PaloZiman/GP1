@@ -24,11 +24,13 @@ namespace dae
 				distanceToHit = rayWithDistToSphere.Magnitude() - thc;
 			else
 				distanceToHit = rayWithDistToSphere.Magnitude() + thc;
+			if (distanceToHit > ray.max) return false;
 
 			hitRecord.origin = ray.direction.Normalized() * distanceToHit + ray.origin;
 			hitRecord.didHit = true;
 			hitRecord.t = distanceToHit;
 			hitRecord.materialIndex = sphere.materialIndex;
+			hitRecord.normal = (hitRecord.origin - sphere.origin).Normalized();
 			return true;
 		}
 
@@ -97,15 +99,15 @@ namespace dae
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
 			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			//assert(false && "No Implemented Yet!");
+			return (light.origin-origin).Normalized();
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
 		{
 			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			//assert(false && "No Implemented Yet!");
+			return light.color * (light.intensity/powf((light.origin-target).Magnitude(),2));
 		}
 	}
 

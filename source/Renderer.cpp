@@ -31,54 +31,79 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float cx = (2 * (px + 0.5f) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height);
-			float cy = 1 - 2 * py / (float)m_Height;
+			float fov = tanf( TO_RADIANS*camera.fovAngle * 0.5f);
+			float cx = ((2 * (px + 0.5f) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height)) * fov;
+			float cy =( 1 - 2 * py / (float)m_Height )* fov;
 			Vector3 cameraSpaceDir = {cx ,cy,1 };
 
 			Ray viewRay{ camera.origin, camera.CalculateCameraToWorld().TransformVector(cameraSpaceDir) };
 
 			ColorRGB finalColor{};
 			HitRecord closestHit{};
-			//Plane testPlane{ {0,-50.f,0.f},{0,1.f,0},0 };
-			//GeometryUtils::HitTest_Plane(testPlane, viewRay, closestHit);
-			//Sphere testSphere{ {0.f,0.f,100.f},50.f,0 };
-			//if(px > m_Width/2)
-			//GeometryUtils::HitTest_Sphere(testSphere, viewRay, closestHit);
 			pScene->GetClosestHit(viewRay, closestHit);
 			if (closestHit.didHit) {
-				/*const float scaled_t = (closestHit.t - 50) / 40;
-				finalColor = { scaled_t,scaled_t,scaled_t };*/
+				ColorRGB incidentRadiance;
+				Vector3 incidentLightDir;
 				for (Light light : lights)
 				{
-					Ray lightRay{ closestHit.origin,(light.origin-closestHit.origin).Normalized(),0.001f,(closestHit.origin - light.origin).Magnitude() };
-					if(pScene->DoesHit(lightRay))
-					{
-						finalColor = materials[closestHit.materialIndex]->Shade()*0.5f;
-					}
-					else
-					{
-						finalColor = materials[closestHit.materialIndex]->Shade();
-					}
+
+					Ray lightRay{closestHit.origin,(light.origin - closestHit.origin).Normalized(),0.001f,(closestHit.origin - light.origin).Magnitude()};
+					const float dot_n_lightDir = Vector3::Dot(lightRay.direction, closestHit.normal);
+					ColorRGB BRDFColor = materials[closestHit.materialIndex]->Shade(closestHit, lightRay.direction, viewRay.direction.Normalized());
+
+						if(m_ShadowsEnabled)
+						{
+							if(!pScene->DoesHit(lightRay))
+							{
+								switch (m_CurrentLightingMode)
+								{
+								case LightingMode::ObservedArea:
+									if (dot_n_lightDir >= 0)
+										finalColor += ColorRGB{1,1,1} * dot_n_lightDir;
+									break;
+								case LightingMode::Radiance:
+									finalColor += LightUtils::GetRadiance(light, closestHit.origin);
+									break;
+								case LightingMode::BRDF:
+									finalColor += BRDFColor;
+									break;
+								case LightingMode::Combined:
+									if (dot_n_lightDir >= 0)
+										finalColor += BRDFColor * LightUtils::GetRadiance(light, closestHit.origin) * dot_n_lightDir;
+									break;
+								}
+							}
+						}
+						else
+						{
+							switch (m_CurrentLightingMode)
+							{
+							case LightingMode::ObservedArea:
+								if (dot_n_lightDir >= 0)
+									finalColor += ColorRGB{ 1,1,1 } * dot_n_lightDir;
+								break;
+							case LightingMode::Radiance:
+								finalColor += LightUtils::GetRadiance(light, closestHit.origin);
+								break;
+							case LightingMode::BRDF:
+								finalColor += BRDFColor;
+								break;
+							case LightingMode::Combined:
+								if (dot_n_lightDir >= 0)
+									finalColor += BRDFColor * LightUtils::GetRadiance(light, closestHit.origin) * dot_n_lightDir;
+								break;
+							}
+						}
+					
 				}
-
+				finalColor.MaxToOne();
 			}
-			//ColorRGB finalColor{ (2 * (px) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height),1 - 2 * py / (float)m_Height ,1 };
-			
-			/*float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
-
-			ColorRGB finalColor{ gradient, gradient, gradient };
-			*/
-			//Update Color in Buffer
-			//finalColor.MaxToOne();
 
 			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
 				static_cast<uint8_t>(finalColor.r * 255),
 				static_cast<uint8_t>(finalColor.g * 255),
 				static_cast<uint8_t>(finalColor.b * 255));
 		}
-		//std::cout << (2 * (px) / (float)m_Width - 1) * ((float)m_Width / (float)m_Height) << "\n";
 	}
 
 	//@END
@@ -89,4 +114,27 @@ void Renderer::Render(Scene* pScene) const
 bool Renderer::SaveBufferToImage() const
 {
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
+}
+
+void Renderer::CycleLightMode()
+{
+	switch (m_CurrentLightingMode)
+	{
+	case LightingMode::Combined:
+		m_CurrentLightingMode = LightingMode::BRDF;
+		std::cout << "BRDF" << std::endl;
+		break;
+	case LightingMode::BRDF:
+		m_CurrentLightingMode = LightingMode::ObservedArea;
+		std::cout << "ObservedArea" << std::endl;
+		break;
+	case LightingMode::ObservedArea:
+		m_CurrentLightingMode = LightingMode::Radiance;
+		std::cout << "Radiance" << std::endl;
+		break;
+	case LightingMode::Radiance:
+		m_CurrentLightingMode = LightingMode::Combined;
+		std::cout << "Combined" << std::endl;
+		break;
+	}
 }
